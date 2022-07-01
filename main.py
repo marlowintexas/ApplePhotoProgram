@@ -16,14 +16,23 @@ from pyicloud import PyiCloudService
 #
 # Read Config Variables
 #
+
 configur = ConfigParser()
-configur.read('config.ini')
+if len(sys.argv[1:]) == 0:
+    configur.read('config.ini')
+    print("Using Configuration File: ['config.ini']")
+else:
+    configur.read(sys.argv[1:])
+    print("Using Configuration File: ",sys.argv[1:])
+
+
 
 #
 # Load and Set Local Variables
 #
 downloadedphotos = 0
 skippedphotos = 0
+photofileexists = 0
 maxphotos = configur.getint('Photos', 'max_photos')
 myid = configur.get('User','appleid')
 mypass = configur.get('User','applepwd')
@@ -118,6 +127,7 @@ while(True):
         print()
         print(downloadedphotos,"PHOTO FILE(S) DOWNLOADED")
         print(skippedphotos, "PHOTO FILE(S) SKIPPED")
+        print(photofileexists, "DUPLICATE PHOTO FILE(S) SKIPPED")
         print("PROCESS COMPLETED, TOTAL TIME FOR DOWNLOAD PROCESS:", totaltime)
         break
 
@@ -166,6 +176,8 @@ while(True):
             # Increment skipped photo variable if photo was not downloaded
             #
             skippedphotos = skippedphotos + 1
+            if os.path.exists(dlfullfile):
+                photofileexists = photofileexists + 1
 
 #
 # Code End

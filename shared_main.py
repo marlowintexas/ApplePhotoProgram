@@ -5,14 +5,13 @@
 #
 # Import Libraries
 #
-import global_variables
 import pytz
 import os
 import sys
 import click
 from datetime import datetime
 from configparser import ConfigParser
-
+from pyicloud2 import PyiCloudService
 
 #
 # Read Config Variables
@@ -25,6 +24,8 @@ if len(sys.argv[1:]) == 0:
 else:
     configur.read(sys.argv[1:])
     print("Using Configuration File: ",sys.argv[1:])
+
+
 
 #
 # Load and Set Local Variables
@@ -42,8 +43,6 @@ to_date = configur.get('Photos','date_to')
 asset_from = configur.get('Photos','asset_from')
 asset_to = configur.get('Photos','asset_to')
 mytz = configur.get('TimeZone','timezone')
-shared_library = configur.get('Photos','shared_library')
-global_variables.shared_library = shared_library
 
 #
 # Convert Dates for Photos into TZ Aware Dates
@@ -60,9 +59,8 @@ asset_to = datetime.fromisoformat(asset_to)
 asset_to = tz.localize(asset_to, is_dst=None).astimezone(pytz.utc)
 
 #
-# Load Libraries and Login to iCloud
+# Login to iCloud
 #
-from pyicloud import PyiCloudService
 api = PyiCloudService(myid,mypass)
 
 #
@@ -108,6 +106,31 @@ elif api.requires_2sa:
         sys.exit(1)
 
 #
+# Old 2 factor
+#
+#if api.requires_2fa:
+#    print("Two-factor authentication required. Your trusted devices are:")
+#
+#    devices = api.trusted_devices
+#    for i, device in enumerate(devices):
+#        print(
+#            "  %s: %s"
+#            % (i, device.get("deviceName", "SMS to %s" % device.get("phoneNumber")))
+#        )
+#
+#    device = click.prompt("Which device would you like to use?", default=0)
+#    device = devices[device]
+#    if not api.send_verification_code(device):
+#        print("Failed to send verification code")
+#        sys.exit(1)
+#
+#    code = click.prompt("Please enter validation code")
+#    if not api.validate_verification_code(device, code):
+#        print("Failed to verify verification code")
+#        sys.exit(1)
+#
+
+#
 # Start the Download of Photos, set start time for process
 #
 timefordownload = datetime.now()
@@ -117,11 +140,15 @@ print()
 print("START DOWNLOADING PHOTO FILES")
 
 #
-# Print off Libraries test
+# Print off Libraries
 #
 #print("Find Libraries")
 #for library_name, album in api.photos.libraries.items():
 #    print(f'Library, Album: {library_name}, {album}')
+
+#main_library = 'SharedSync-E1243494-2790-4767-9CC3-2F8A27FEFE68'
+#    for photo in album:
+#        print(f'{photo.asset_date} {photo} {photo.filename}')
 
 #
 # Set album or all photos
